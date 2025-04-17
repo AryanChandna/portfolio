@@ -1,30 +1,31 @@
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
 import styled from 'styled-components';
-import avatar from '../assets/avatar.png'; // Make sure to add your avatar image to assets folder
+import { useEffect, useRef } from 'react';
+import avatar from '../assets/avatar.png';
 import avatarHover from '../assets/avatar-hover.png';
 
 const AboutSection = styled.section`
   min-height: 100vh;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   position: relative;
   background-color: ${({ theme }) => theme.colors.background};
-  padding: 4rem 2rem;
-  margin-top: -5vh;
+  padding: 2rem;
+  scroll-margin-top: 5rem;
   z-index: 2;
   overflow: hidden;
 
   &::before {
     content: '';
     position: absolute;
-    top: 15%;
+    top: 0;
     left: 0;
     right: 0;
-    bottom: 0;
-    background: ${({ theme }) => `linear-gradient(to bottom, transparent, ${theme.colors.background})`};
+    height: 100px;
+    background: ${({ theme }) => `linear-gradient(to bottom, ${theme.colors.background}, transparent)`};
     pointer-events: none;
-    z-index: -1;
+    z-index: 1;
   }
 
   &::after {
@@ -49,6 +50,12 @@ const AboutSection = styled.section`
       transform: scale(1.1);
     }
   }
+
+  @media (max-width: 1024px) {
+    padding: 1rem;
+    min-height: auto;
+    padding-top: 4rem;
+  }
 `;
 
 const AboutContainer = styled.div`
@@ -56,7 +63,6 @@ const AboutContainer = styled.div`
   max-width: 1400px;
   position: relative;
   z-index: 1;
-  padding-top: 2rem;
 `;
 
 const ContentGrid = styled.div`
@@ -64,13 +70,14 @@ const ContentGrid = styled.div`
   grid-template-columns: 1fr 1fr;
   gap: 4rem;
   align-items: center;
-  padding-top: 2rem;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
 
   @media (max-width: 1024px) {
     grid-template-columns: 1fr;
     gap: 3rem;
     text-align: center;
-    padding-top: 1rem;
   }
 `;
 
@@ -105,7 +112,8 @@ const ImageWrapper = styled(motion.div)`
   @media (max-width: 1024px) {
     justify-content: center;
     padding-left: 0;
-    min-height: 480px;
+    margin: 0 auto;
+    min-height: 450px;
   }
 `;
 
@@ -176,6 +184,13 @@ const StyledImage = styled(motion.div)`
   }
 `;
 
+const GradientText = styled.span`
+  background: ${({ theme }) => `linear-gradient(135deg, ${theme.colors.primary}, ${theme.colors.accent})`};
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 600;
+`;
+
 const FloatingCard = styled(motion.div)`
   position: absolute;
   padding: 0.875rem 1.25rem;
@@ -189,7 +204,7 @@ const FloatingCard = styled(motion.div)`
   font-weight: 500;
   letter-spacing: 0.5px;
   white-space: nowrap;
-  transition: all 0.3s ease;
+  cursor: pointer;
 
   &:hover {
     transform: translateY(-2px);
@@ -345,68 +360,248 @@ const SkillsHeader = styled.h3`
 
 const SkillsGrid = styled(motion.div)`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 0.875rem;
-  margin-top: 0.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1rem;
 
   @media (max-width: 1024px) {
-    justify-items: center;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1rem;
   }
 `;
 
+const DecorativeCircle = styled(motion.div)`
+  position: absolute;
+  border-radius: 50%;
+  border: 2px dashed ${({ theme }) => `${theme.colors.primary}30`};
+  pointer-events: none;
+  z-index: -1;
+`;
+
+const DecorativeShape = styled(motion.div)`
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: ${({ theme }) => `linear-gradient(135deg, ${theme.colors.primary}10, ${theme.colors.accent}10)`};
+  backdrop-filter: blur(4px);
+  box-shadow: 0 4px 15px ${({ theme }) => `${theme.colors.primary}10`};
+  z-index: -1;
+`;
+
+const ImageDecorations = styled(motion.div)`
+  position: absolute;
+  inset: -20px;
+  pointer-events: none;
+`;
+
 const SkillCard = styled(motion.div)`
-  padding: 0.875rem;
-  background: ${({ theme }) => `linear-gradient(135deg, ${theme.colors.surface}90, ${theme.colors.background}90)`};
+  position: relative;
+  padding: 1.25rem;
+  background: ${({ theme }) => `linear-gradient(135deg, ${theme.colors.surface}90, ${theme.colors.background}80)`};
   backdrop-filter: blur(10px);
-  border-radius: 10px;
-  border: 1px solid ${({ theme }) => `${theme.colors.primary}10`};
+  border-radius: 16px;
+  border: 1px solid ${({ theme }) => `${theme.colors.primary}15`};
   display: flex;
   align-items: center;
-  justify-content: center;
-  color: ${({ theme }) => theme.colors.primary};
+  gap: 1rem;
+  color: ${({ theme }) => theme.colors.text};
   font-weight: 500;
-  box-shadow: 0 4px 20px ${({ theme }) => `${theme.colors.primary}05`};
-  transition: all 0.3s ease;
-  letter-spacing: 0.5px;
-  text-align: center;
-  position: relative;
+  cursor: pointer;
   overflow: hidden;
-
+  box-shadow: 
+    0 4px 20px ${({ theme }) => `${theme.colors.primary}05`},
+    inset 0 0 0 1px ${({ theme }) => `${theme.colors.primary}10`};
+  
   &::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: ${({ theme }) => `linear-gradient(
-      90deg,
-      transparent,
-      ${theme.colors.primary}10,
-      transparent
-    )`};
-    transition: 0.5s;
+    inset: 0;
+    background: ${({ theme }) => `linear-gradient(135deg, ${theme.colors.primary}10, ${theme.colors.accent}05)`};
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
+      ${({ theme }) => `${theme.colors.primary}15`} 0%,
+      transparent 50%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
   }
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 30px ${({ theme }) => `${theme.colors.primary}15`};
     border-color: ${({ theme }) => `${theme.colors.primary}30`};
-    background: ${({ theme }) => `linear-gradient(135deg, ${theme.colors.surface}95, ${theme.colors.background}95)`};
+    box-shadow: 
+      0 8px 30px ${({ theme }) => `${theme.colors.primary}15`},
+      inset 0 0 0 1px ${({ theme }) => `${theme.colors.primary}20`};
 
     &::before {
-      left: 100%;
+      opacity: 1;
+    }
+
+    &::after {
+      opacity: 1;
+    }
+
+    .skill-icon {
+      transform: scale(1.1);
     }
   }
 `;
 
+const SkillIcon = styled.div`
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: ${({ theme }) => `linear-gradient(135deg, ${theme.colors.primary}15, ${theme.colors.accent}10)`};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  transition: transform 0.3s ease;
+  box-shadow: 
+    0 2px 10px ${({ theme }) => `${theme.colors.primary}10`},
+    inset 0 0 0 1px ${({ theme }) => `${theme.colors.primary}15`};
+
+  &.skill-icon {
+    transition: transform 0.3s ease;
+  }
+`;
+
+const SkillInfo = styled.div`
+  flex: 1;
+`;
+
+const SkillName = styled.div`
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 0.95rem;
+  margin-bottom: 0.25rem;
+`;
+
+const SkillCategory = styled.div`
+  font-size: 0.8rem;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  opacity: 0.8;
+`;
+
+const ResumeButton = styled(motion.a)`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: ${({ theme }) => `linear-gradient(135deg, ${theme.colors.primary}, ${theme.colors.accent})`};
+  color: white;
+  border-radius: 8px;
+  font-weight: 500;
+  text-decoration: none;
+  margin-top: 2rem;
+  box-shadow: 0 4px 15px ${({ theme }) => `${theme.colors.primary}20`};
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px ${({ theme }) => `${theme.colors.primary}30`};
+  }
+
+  svg {
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+`;
+
+interface Skill {
+  name: string;
+  icon: string;
+  category: string;
+}
+
 const About = () => {
   const { scrollYProgress } = useScroll();
-  const imageRotateY = useTransform(scrollYProgress, [0, 0.5], [0, 15]);
-  const imageRotateX = useTransform(scrollYProgress, [0, 0.5], [0, -8]);
-  const imageScale = useTransform(scrollYProgress, [0, 0.5], [1, 1.08]);
+  const y = useTransform(scrollYProgress, [0, 1], [0, -50]);
+  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0.8]);
+
+  // Mouse parallax effect
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const springConfig = { damping: 25, stiffness: 200 };
+  const rotateX = useSpring(useTransform(mouseY, [-500, 500], [10, -10]), springConfig);
+  const rotateY = useSpring(useTransform(mouseX, [-500, 500], [-10, 10]), springConfig);
+
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const cards = document.querySelectorAll('.skill-card');
+      cards.forEach((card) => {
+        const rect = (card as HTMLElement).getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        (card as HTMLElement).style.setProperty('--mouse-x', `${x}%`);
+        (card as HTMLElement).style.setProperty('--mouse-y', `${y}%`);
+      });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  useEffect(() => {
+    // Smooth scroll handling
+    const handleScroll = () => {
+      const aboutSection = document.getElementById('about');
+      if (aboutSection) {
+        const rect = aboutSection.getBoundingClientRect();
+        if (rect.top <= 0 && rect.bottom > window.innerHeight) {
+          aboutSection.style.transform = `translateY(${Math.max(0, -rect.top * 0.1)}px)`;
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const decorationVariants = {
+    initial: { 
+      opacity: 0, 
+      scale: 0,
+      y: 0
+    },
+    animate: { 
+      opacity: 1, 
+      scale: 1,
+      y: [-5, 5],
+      transition: {
+        opacity: { duration: 0.8, ease: "easeOut" },
+        scale: { duration: 0.8, ease: "easeOut" },
+        y: {
+          duration: 2,
+          repeat: Infinity,
+          repeatType: "reverse",
+          ease: "easeInOut"
+        }
+      }
+    }
+  };
+
+  const skills: Skill[] = [
+    { name: 'Backend Development', icon: '⚙️', category: 'Core Expertise' },
+    { name: 'System Design', icon: '🏗️', category: 'Architecture' },
+    { name: 'Node.js', icon: '💻', category: 'Runtime' },
+    { name: 'Python', icon: '🐍', category: 'Language' },
+    { name: 'Java', icon: '☕', category: 'Language' },
+    { name: 'AWS', icon: '☁️', category: 'Cloud' },
+    { name: 'Docker', icon: '🐳', category: 'DevOps' },
+    { name: 'Kubernetes', icon: '⛵', category: 'Orchestration' },
+    { name: 'MongoDB', icon: '🍃', category: 'Database' },
+    { name: 'PostgreSQL', icon: '🐘', category: 'Database' },
+  ];
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -429,18 +624,28 @@ const About = () => {
     }
   };
 
-  const skills = [
-    'Backend Development',
-    'System Design',
-    'Node.js',
-    'Python',
-    'Java',
-    'AWS',
-    'Docker',
-    'Kubernetes',
-    'MongoDB',
-    'PostgreSQL',
-  ];
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: i * 0.1,
+        duration: 0.5,
+        ease: [0.215, 0.61, 0.355, 1],
+      },
+    }),
+    hover: {
+      scale: 1.02,
+      transition: {
+        duration: 0.2,
+        ease: "easeInOut"
+      }
+    },
+    tap: {
+      scale: 0.98
+    }
+  };
 
   const techBadges = [
     { icon: '⚡', position: { top: '15%', left: '-5%' } },
@@ -450,11 +655,52 @@ const About = () => {
   ];
 
   return (
-    <AboutSection id="about">
+    <AboutSection id="about" ref={containerRef}>
       <AboutContainer>
         <ContentGrid>
-          <ImageWrapper>
+          <ImageWrapper style={{ y, opacity }}>
+            <ImageDecorations>
+              <DecorativeCircle
+                style={{ width: '400px', height: '400px', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
+                variants={decorationVariants}
+                initial="initial"
+                animate="animate"
+                transition={{ delay: 0.2 }}
+              />
+              <DecorativeCircle
+                style={{ width: '300px', height: '300px', top: '50%', left: '50%', transform: 'translate(-50%, -50%) rotate(45deg)' }}
+                variants={decorationVariants}
+                initial="initial"
+                animate="animate"
+                transition={{ delay: 0.4 }}
+              />
+              <DecorativeShape
+                style={{ top: '10%', right: '5%' }}
+                variants={decorationVariants}
+                initial="initial"
+                animate="animate"
+                whileHover={{ rotate: 360 }}
+                transition={{ delay: 0.6 }}
+              />
+              <DecorativeShape
+                style={{ bottom: '15%', left: '0%', borderRadius: '50%' }}
+                variants={decorationVariants}
+                initial="initial"
+                animate="animate"
+                whileHover={{ rotate: -360 }}
+                transition={{ delay: 0.8 }}
+              />
+              <DecorativeShape
+                style={{ top: '20%', left: '10%', transform: 'rotate(45deg)' }}
+                variants={decorationVariants}
+                initial="initial"
+                animate="animate"
+                whileHover={{ rotate: 405 }}
+                transition={{ delay: 1 }}
+              />
+            </ImageDecorations>
             <ImageFrame
+              style={{ rotateX, rotateY }}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -462,8 +708,8 @@ const About = () => {
               whileHover={{ scale: 1.02 }}
             >
               <StyledImage>
-                <img src={avatar} alt="Aryan Chandna" loading="eager" />
-                <img src={avatarHover} alt="Aryan Chandna Hover" loading="eager" />
+                <img src={avatar} alt="Profile" loading="eager" />
+                <img src={avatarHover} alt="Profile Hover" loading="eager" />
               </StyledImage>
             </ImageFrame>
             <FloatingCard
@@ -472,6 +718,9 @@ const About = () => {
               viewport={{ once: true }}
               transition={{ delay: 0.3, ease: "easeOut" }}
               style={{ left: 0, top: '25%' }}
+              whileHover="hover"
+              whileTap="tap"
+              variants={cardVariants}
             >
               🎯 Backend Engineer
             </FloatingCard>
@@ -481,6 +730,9 @@ const About = () => {
               viewport={{ once: true }}
               transition={{ delay: 0.5, ease: "easeOut" }}
               style={{ right: 0, bottom: '35%' }}
+              whileHover="hover"
+              whileTap="tap"
+              variants={cardVariants}
             >
               🌟 System Architect
             </FloatingCard>
@@ -513,31 +765,53 @@ const About = () => {
               <SectionTitle>About Me</SectionTitle>
               <BioContainer>
                 <Bio>
-                  I'm a <strong>passionate Backend Engineer</strong> with a deep love for building scalable and efficient systems.
-                  With expertise in <strong>distributed systems</strong> and <strong>cloud architecture</strong>, I specialize in creating
+                  I'm a <GradientText>passionate Backend Engineer</GradientText> with a deep love for building scalable and efficient systems.
+                  With expertise in <GradientText>distributed systems</GradientText> and <GradientText>cloud architecture</GradientText>, I specialize in creating
                   robust backend solutions that power modern applications.
                 </Bio>
                 <Bio style={{ marginTop: '1.5rem' }}>
-                  My approach combines <strong>technical excellence</strong> with practical problem-solving,
+                  My approach combines <GradientText>technical excellence</GradientText> with practical problem-solving,
                   ensuring that every solution I build is not just functional, but also
                   maintainable and future-proof.
                 </Bio>
               </BioContainer>
+              <ResumeButton 
+                href="/resume.pdf" 
+                target="_blank"
+                rel="noopener noreferrer"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Download Resume
+              </ResumeButton>
             </motion.div>
             <SkillsContainer variants={itemVariants}>
               <SkillsHeader>Technologies I Work With</SkillsHeader>
               <SkillsGrid>
                 {skills.map((skill, index) => (
                   <SkillCard
-                    key={skill}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
+                    key={`${skill.name}-${index}`}
+                    className="skill-card"
+                    variants={cardVariants}
+                    initial="hidden"
+                    whileInView="visible"
+                    whileHover="hover"
+                    whileTap="tap"
+                    custom={index}
                     viewport={{ once: true }}
-                    transition={{ delay: index * 0.1 }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
                   >
-                    {skill}
+                    <SkillIcon className="skill-icon">
+                      <span role="img" aria-label={`${skill.name} icon`}>
+                        {skill.icon}
+                      </span>
+                    </SkillIcon>
+                    <SkillInfo>
+                      <SkillName>{skill.name}</SkillName>
+                      <SkillCategory>{skill.category}</SkillCategory>
+                    </SkillInfo>
                   </SkillCard>
                 ))}
               </SkillsGrid>
