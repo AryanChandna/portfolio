@@ -237,9 +237,10 @@ const Hero = () => {
 
   const fullText = `> const developer = {
   name: "Aryan Chandna",
-  role: "Backend Engineer",
-  passion: "Building scalable systems",
-  status: "Ready to collaborate"
+  role: "Software Engineer",
+  passion: "Building robust, scalable systems",
+  status: "Ready to build something amazing!"
+  funFact: "Thinks in threads, speaks in APIs.",
 };`;
 
   useEffect(() => {
@@ -270,23 +271,22 @@ const Hero = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.8 }}
           >
-            Crafting Digital Excellence
-          </Title>
+            Hi there, Nice to meet you!
+</Title>
           <Subtitle
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.8 }}
           >
-            Backend Engineer & System Architect
-          </Subtitle>
+I specialize in Java, Spring Boot, and system design, creating backend solutions that are fast, reliable, and ready to scale.
+</Subtitle>
           <Description
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.8 }}
           >
-            Passionate about building robust, scalable systems that power the digital world.
-            Specializing in high-performance backend solutions and distributed systems.
-          </Description>
+Open to exciting opportunities. Let’s build something impactful together!
+</Description>
           <SocialLinks
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
